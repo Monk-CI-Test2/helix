@@ -1,0 +1,251 @@
+name: Helix Benchmark Build
+
+on:
+  workflow_dispatch:
+
+env:
+  MSRV: "1.90"
+  GRAMMAR_CACHE_VERSION: ""
+
+jobs:
+  github-cache:
+    name: GitHub Runner / With Cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RUST_BACKTRACE: 1
+      HELIX_LOG_LEVEL: info
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Install Rust MSRV toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.MSRV }}
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: github-rust-build
+
+      - name: Cache tree-sitter grammars
+        uses: actions/cache@v5
+        with:
+          path: runtime/grammars
+          key: github-${{ runner.os }}-${{ runner.arch }}-tree-sitter-${{ hashFiles('languages.toml') }}
+          restore-keys: |
+            github-${{ runner.os }}-${{ runner.arch }}-tree-sitter-
+
+      - name: Cargo check
+        run: cargo check
+
+      - name: Cargo test
+        run: cargo test --workspace
+
+      - name: Cargo integration test
+        run: cargo integration-test
+
+      - name: Cargo fmt
+        run: cargo fmt --all --check
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Cargo doc
+        run: cargo doc --no-deps --workspace --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Validate queries
+        run: cargo xtask query-check
+
+      - name: Validate themes
+        run: cargo xtask theme-check
+
+      - name: Generate docs
+        run: cargo xtask docgen
+
+      - name: Check documentation diff
+        run: |
+          git diff
+          git diff-files --quiet || (
+            echo "Run 'cargo xtask docgen', commit the changes and push again"
+            exit 1
+          )
+
+  github-no-cache:
+    name: GitHub Runner / No Cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      RUST_BACKTRACE: 1
+      HELIX_LOG_LEVEL: info
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Install Rust MSRV toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.MSRV }}
+          components: rustfmt, clippy
+
+      - name: Cargo check
+        run: cargo check
+
+      - name: Cargo test
+        run: cargo test --workspace
+
+      - name: Cargo integration test
+        run: cargo integration-test
+
+      - name: Cargo fmt
+        run: cargo fmt --all --check
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Cargo doc
+        run: cargo doc --no-deps --workspace --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Validate queries
+        run: cargo xtask query-check
+
+      - name: Validate themes
+        run: cargo xtask theme-check
+
+      - name: Generate docs
+        run: cargo xtask docgen
+
+      - name: Check documentation diff
+        run: |
+          git diff
+          git diff-files --quiet || (
+            echo "Run 'cargo xtask docgen', commit the changes and push again"
+            exit 1
+          )
+
+  monkci-cache:
+    name: MonkCI Runner / With Cache
+    runs-on: monkci-ubuntu-24.04-4
+    timeout-minutes: 30
+    env:
+      RUST_BACKTRACE: 1
+      HELIX_LOG_LEVEL: info
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Install Rust MSRV toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.MSRV }}
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: monkci-rust-build
+
+      - name: Cache tree-sitter grammars
+        uses: actions/cache@v5
+        with:
+          path: runtime/grammars
+          key: monkci-${{ runner.os }}-${{ runner.arch }}-tree-sitter-${{ hashFiles('languages.toml') }}
+          restore-keys: |
+            monkci-${{ runner.os }}-${{ runner.arch }}-tree-sitter-
+
+      - name: Cargo check
+        run: cargo check
+
+      - name: Cargo test
+        run: cargo test --workspace
+
+      - name: Cargo integration test
+        run: cargo integration-test
+
+      - name: Cargo fmt
+        run: cargo fmt --all --check
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Cargo doc
+        run: cargo doc --no-deps --workspace --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Validate queries
+        run: cargo xtask query-check
+
+      - name: Validate themes
+        run: cargo xtask theme-check
+
+      - name: Generate docs
+        run: cargo xtask docgen
+
+      - name: Check documentation diff
+        run: |
+          git diff
+          git diff-files --quiet || (
+            echo "Run 'cargo xtask docgen', commit the changes and push again"
+            exit 1
+          )
+
+  monkci-no-cache:
+    name: MonkCI Runner / No Cache
+    runs-on: monkci-ubuntu-24.04-4
+    timeout-minutes: 30
+    env:
+      RUST_BACKTRACE: 1
+      HELIX_LOG_LEVEL: info
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+
+      - name: Install Rust MSRV toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.MSRV }}
+          components: rustfmt, clippy
+
+      - name: Cargo check
+        run: cargo check
+
+      - name: Cargo test
+        run: cargo test --workspace
+
+      - name: Cargo integration test
+        run: cargo integration-test
+
+      - name: Cargo fmt
+        run: cargo fmt --all --check
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Cargo doc
+        run: cargo doc --no-deps --workspace --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Validate queries
+        run: cargo xtask query-check
+
+      - name: Validate themes
+        run: cargo xtask theme-check
+
+      - name: Generate docs
+        run: cargo xtask docgen
+
+      - name: Check documentation diff
+        run: |
+          git diff
+          git diff-files --quiet || (
+            echo "Run 'cargo xtask docgen', commit the changes and push again"
+            exit 1
+          )
