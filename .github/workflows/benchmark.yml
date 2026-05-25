@@ -1,4 +1,4 @@
-name: Helix Benchmark Build
+name: Helix Benchmark Build with 32vCPU
 
 on:
   workflow_dispatch:
@@ -131,7 +131,7 @@ jobs:
 
   monkci-cache:
     name: MonkCI Runner / With Cache
-    runs-on: monkci-ubuntu-24.04-4
+    runs-on: monkci-ubuntu-24.04-32
     timeout-minutes: 30
     env:
       RUST_BACKTRACE: 1
@@ -198,7 +198,7 @@ jobs:
 
   monkci-no-cache:
     name: MonkCI Runner / No Cache
-    runs-on: monkci-ubuntu-24.04-4
+    runs-on: monkci-ubuntu-24.04-32
     timeout-minutes: 30
     env:
       RUST_BACKTRACE: 1
