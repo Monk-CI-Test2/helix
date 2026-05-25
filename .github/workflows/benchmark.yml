@@ -1,4 +1,4 @@
-name: Helix Benchmark Build with 32vCPU
+name: Helix Benchmark Build
 
 on:
   workflow_dispatch:
